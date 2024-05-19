@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,7 +56,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email không tồn tại");
         } catch (AuthenticationException e) {
             // Sai mật khẩu hoặc thông tin đăng nhập không hợp lệ
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai mật khẩu");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai mật khẩu hoặc thông tin đăng nhập không hợp lệ");
         } catch (Exception e) {
             //lỗi khác do serve
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -67,6 +68,7 @@ public class UserController {
             String msg = userService.logout(request, response);
             return ResponseEntity.ok(msg);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

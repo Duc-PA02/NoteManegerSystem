@@ -31,6 +31,7 @@ public class UserService implements IUserService{
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final ConfirmEmailService confirmEmailService;
+    private final UserDetailsService userDetailsService;
 
     @Override
     public void login(LoginRequest loginRequest, HttpServletRequest request) throws Exception {
@@ -45,7 +46,8 @@ public class UserService implements IUserService{
         // Tạo AuthenticationToken với thông tin của người dùng
         UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(
                 loginRequest.getEmail(),
-                loginRequest.getPassword()
+                loginRequest.getPassword(),
+                existingUser.getAuthorities()
         );
 
         // Xác thực người dùng
@@ -58,6 +60,9 @@ public class UserService implements IUserService{
             HttpSession session = request.getSession();
             session.setAttribute("userEmail", loginRequest.getEmail());
             System.out.println("Email đã được lưu vào session: " + session.getAttribute("userEmail"));
+            // Lưu thông tin role vào session
+            session.setAttribute("userRoles", authResult.getAuthorities().toString());
+            System.out.println("Roles đã được lưu vào session: " + session.getAttribute("userRoles"));
         } else {
             throw new Exception("Xác thực không thành công");
         }
@@ -88,28 +93,32 @@ public class UserService implements IUserService{
     public String logout(HttpServletRequest request, HttpServletResponse response) {
         // Lấy session hiện tại của người dùng
         HttpSession session = request.getSession(false);
-
-        // Kiểm tra xem session có tồn tại hay không
-        if (session != null) {
-            System.out.println("Email sẽ được xóa khỏi session: " + session.getAttribute("userEmail"));
-            // Xóa thông tin đăng nhập khỏi session
-            session.removeAttribute("userEmail");
-        }
-
         // Lấy thông tin xác thực từ SecurityContext
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Kiểm tra xem người dùng đã được xác thực hay chưa
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return "Ban chua dang nhap";
+        // Kiểm tra xem session có tồn tại và có chứa thông tin về vai trò hay không
+        if (session != null) {
+            String userRoles = (String) session.getAttribute("userRoles");
+            if (userRoles != null && userRoles.equals("[ROLE_USER]")) {
+                // Người dùng có quyền ROLE_USER, bạn có thể tiếp tục xử lý
+                System.out.println("Email sẽ được xóa khỏi session: " + session.getAttribute("userEmail"));
+                System.out.println("Email sẽ được xóa khỏi session: " + session.getAttribute("userRoles"));
+                // Xóa thông tin đăng nhập khỏi session
+                session.removeAttribute("userEmail");
+                session.removeAttribute("userRoles");
+                // Khởi tạo SecurityContextLogoutHandler
+                SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+
+                // Xử lý đăng xuất
+                logoutHandler.logout(request, response, authentication);
+
+                return "Đăng xuất thành công";
+            } else {
+                return "Bạn không có quyền để đăng xuất";
+            }
+        } else {
+            // Session không tồn tại
+            return "Bạn chưa đăng nhập";
         }
-
-        // Khởi tạo SecurityContextLogoutHandler
-        SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
-
-        // Xử lý đăng xuất
-        logoutHandler.logout(request, response, authentication);
-
-        return "Dang xuat thanh cong";
     }
 }
