@@ -52,17 +52,21 @@ public class JwtToken {
                 .parseClaimsJws(token)
                 .getBody();
     }
-    public <T> T extracClaim(String token, Function<Claims, T> claimsTFunction){
+    public <T> T extractClaim(String token, Function<Claims, T> claimsTFunction){
         final Claims claims = this.extractAllClaims(token);
         return claimsTFunction.apply(claims);
     }
     public boolean isTokenExpired(String token){
-        Date expirationDate = this.extracClaim(token, Claims::getExpiration);
+        Date expirationDate = this.extractClaim(token, Claims::getExpiration);
         return expirationDate.before(new Date());
     }
     public String extractEmail(String token){
-        return extracClaim(token, Claims::getSubject);
+        return extractClaim(token, Claims::getSubject);
     }
+    public Integer extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", Integer.class));
+    }
+
     public boolean validateToken(String token, UserDetails userDetails){
         String email = extractEmail(token);
         return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));

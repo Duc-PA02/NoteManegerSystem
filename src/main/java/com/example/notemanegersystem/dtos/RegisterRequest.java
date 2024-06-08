@@ -7,8 +7,6 @@ import lombok.Data;
 public class RegisterRequest {
     private String email;
     private String password;
-    @JsonProperty("retype_password")
-    private String retypePassword;
     @JsonProperty("full_name")
     private String fullName;
 }

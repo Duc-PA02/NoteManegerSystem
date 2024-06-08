@@ -5,6 +5,7 @@ import com.example.notemanegersystem.entity.Label;
 import com.example.notemanegersystem.exceptions.DataNotFoundException;
 import com.example.notemanegersystem.service.label.LabelService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +18,12 @@ import java.util.List;
 public class LabelController {
     private final LabelService labelService;
     @PostMapping
-    public String createLabel(@RequestBody LabelDTO labelDTO){
-        return labelService.createLabel(labelDTO);
+    public String createLabel(@RequestHeader("Authorization") String authHeader, @RequestBody LabelDTO labelDTO){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return "UNAUTHORIZED";
+        }
+        String token = authHeader.substring(7);
+        return labelService.createLabel(token, labelDTO);
     }
     @DeleteMapping
     public String deleteLabel(@RequestParam Integer id) throws DataNotFoundException {

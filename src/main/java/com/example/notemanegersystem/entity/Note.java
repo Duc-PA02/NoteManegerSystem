@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Note extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,9 +24,9 @@ public class Note extends BaseEntity{
     @Column(name = "sort_order")
     private Integer sortOrder;
     @Column(name = "is_pinned")
-    private Boolean isPinned = false;
+    private Boolean isPinned;
     @Column(name = "is_archived")
-    private Boolean isArchived = false;
+    private Boolean isArchived;
 
     @ManyToOne
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_note_user"))

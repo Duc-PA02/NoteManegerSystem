@@ -3,6 +3,7 @@ package com.example.notemanegersystem.service.user;
 import com.example.notemanegersystem.component.JwtToken;
 import com.example.notemanegersystem.dtos.LoginRequest;
 import com.example.notemanegersystem.dtos.RegisterRequest;
+import com.example.notemanegersystem.dtos.SendEmail;
 import com.example.notemanegersystem.entity.User;
 import com.example.notemanegersystem.exceptions.DataNotFoundException;
 import com.example.notemanegersystem.repository.UserRepository;
@@ -61,8 +62,8 @@ public class UserService implements IUserService{
     }
 
     @Override
-    public String register(RegisterRequest registerRequest) throws Exception {
-        String email = registerRequest.getEmail();
+    public String register(SendEmail sendEmail) throws Exception {
+        String email = sendEmail.getEmail();
         if (userRepository.existsByEmail(email)){
             throw new DataIntegrityViolationException("email đã tồn tại");
         }

@@ -3,6 +3,7 @@ package com.example.notemanegersystem.controller;
 import com.example.notemanegersystem.dtos.LoginRequest;
 import com.example.notemanegersystem.dtos.LoginResponse;
 import com.example.notemanegersystem.dtos.RegisterRequest;
+import com.example.notemanegersystem.dtos.SendEmail;
 import com.example.notemanegersystem.entity.ConfirmEmail;
 import com.example.notemanegersystem.repository.ConfirmEmailRepository;
 import com.example.notemanegersystem.service.email.ConfirmEmailService;
@@ -19,9 +20,9 @@ public class UserController {
     private final ConfirmEmailService confirmEmailService;
     private final ConfirmEmailRepository confirmEmailRepository;
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest){
+    public ResponseEntity<?> register(@RequestBody SendEmail sendEmail){
         try {
-            String msg = userService.register(registerRequest);
+            String msg = userService.register(sendEmail);
             return ResponseEntity.ok().body(msg);
         } catch (Exception e) {
             throw new RuntimeException(e);
