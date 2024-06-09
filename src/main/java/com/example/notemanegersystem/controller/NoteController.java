@@ -1,8 +1,7 @@
 package com.example.notemanegersystem.controller;
 
-import com.example.notemanegersystem.dtos.DeleteNoteDTO;
-import com.example.notemanegersystem.dtos.NoteDTO;
-import com.example.notemanegersystem.dtos.NoteUpdateDTO;
+import com.example.notemanegersystem.dtos.*;
+import com.example.notemanegersystem.entity.Content;
 import com.example.notemanegersystem.entity.Note;
 import com.example.notemanegersystem.exceptions.DataNotFoundException;
 import com.example.notemanegersystem.service.note.NoteService;
@@ -57,6 +56,33 @@ public class NoteController {
         try {
             List<Note> noteList = noteService.noteByUser(userId);
             return ResponseEntity.ok().body(noteList);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @GetMapping("/by-user-label")
+    public ResponseEntity<?> getNotesByUserAndLabel(@RequestParam Integer labelId, @RequestParam Integer userId) {
+        try {
+            List<Note> notes = noteService.getNotesByUserAndLabel(labelId, userId);
+            return ResponseEntity.ok(notes);
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+    @PostMapping("/note-label")
+    public ResponseEntity<?> noteLabel(@RequestBody NoteLabelDTO noteLabelDTO) {
+        try {
+            String msg = noteService.noteLabel(noteLabelDTO);
+            return ResponseEntity.ok().body(msg);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PostMapping("/content")
+    public ResponseEntity<?> createNoteContent(@RequestBody NoteContentDTO noteContentDTO) {
+        try {
+            Content content = noteService.createNoteContent(noteContentDTO);
+            return ResponseEntity.ok().body(content);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

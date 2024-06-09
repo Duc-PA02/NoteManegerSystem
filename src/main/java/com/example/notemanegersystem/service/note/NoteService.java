@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,8 @@ public class NoteService implements INoteService{
     private final JwtToken jwtToken;
     private final ContentRepository contentRepository;
     private final ImageRepository imageRepository;
+    private final LabelRepository labelRepository;
+    private final NoteLabelRepository noteLabelRepository;
 
     @Override
     public Note createNote(String token, NoteDTO noteDTO) throws Exception {
@@ -97,13 +100,23 @@ public class NoteService implements INoteService{
     }
 
     @Override
-    public Image createNoteImage(Integer noteId, NoteImageDTO noteImageDTO) throws Exception {
+    public Image createNoteImage(NoteImageDTO noteImageDTO) throws Exception {
         return null;
     }
 
     @Override
-    public Content createNoteContent(Integer noteId, NoteContentDTO noteContentDTO) throws Exception {
-        return null;
+    public Content createNoteContent(NoteContentDTO noteContentDTO) throws Exception {
+        Optional<Note> noteOptional = noteRepository.findById(noteContentDTO.getNoteId());
+        if (noteOptional.isPresent()) {
+            Note note = noteOptional.get();
+            Content content = Content.builder()
+                    .text(noteContentDTO.getText())
+                    .note(note)
+                    .build();
+            return contentRepository.save(content);
+        } else {
+            throw new Exception("Note not found with id: " + noteContentDTO.getNoteId());
+        }
     }
 
     @Override
@@ -114,6 +127,49 @@ public class NoteService implements INoteService{
         }
         List<Note> noteList = noteRepository.findNoteByUserId(userId);
         return noteList;
+    }
+
+    @Override
+    public List<Note> getNotesByUserAndLabel(Integer labelId, Integer userId) throws DataNotFoundException {
+        // Kiểm tra xem nhãn có tồn tại không
+        Label label = labelRepository.findById(labelId)
+                .orElseThrow(() -> new DataNotFoundException("Label not found"));
+
+        // Lấy danh sách các ghi chú của người dùng
+        List<Note> userNotes = noteRepository.findNoteByUserId(userId);
+        List<Note> filteredNotes = new ArrayList<>();
+
+        // Lọc danh sách các ghi chú có nhãn cụ thể
+        for (Note note : userNotes) {
+            for (NoteLabel noteLabel : note.getNoteLabels()) {
+                if (noteLabel.getLabel().getId().equals(labelId)) {
+                    filteredNotes.add(note);
+                    break;
+                }
+            }
+        }
+        return filteredNotes;
+    }
+
+    @Override
+    public String noteLabel(NoteLabelDTO noteLabelDTO) throws DataNotFoundException {
+        Note note = noteRepository.findByIdAndUserId(noteLabelDTO.getNoteId(), noteLabelDTO.getUserId());
+        if (note == null){
+            throw new DataNotFoundException("note not found");
+        }
+        Label label = labelRepository.findById(noteLabelDTO.getLabelId())
+                .orElseThrow(() -> new DataNotFoundException("Label not found"));
+
+        NoteLabel noteLabel = new NoteLabel();
+        noteLabel.setNote(note);
+        noteLabel.setLabel(label);
+        noteLabelRepository.save(noteLabel);
+        NoteLog noteLog = NoteLog.builder()
+                .action("add label " + label.getName())
+                .note(note)
+                .build();
+        noteLogRepository.save(noteLog);
+        return "add label successfuly";
     }
 
     private NoteLog createLog(Note note, String action){

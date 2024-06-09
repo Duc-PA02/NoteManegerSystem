@@ -18,12 +18,8 @@ import java.util.List;
 public class LabelController {
     private final LabelService labelService;
     @PostMapping
-    public String createLabel(@RequestHeader("Authorization") String authHeader, @RequestBody LabelDTO labelDTO){
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return "UNAUTHORIZED";
-        }
-        String token = authHeader.substring(7);
-        return labelService.createLabel(token, labelDTO);
+    public String createLabel(@RequestBody LabelDTO labelDTO){
+        return labelService.createLabel(labelDTO);
     }
     @DeleteMapping
     public String deleteLabel(@RequestParam Integer id) throws DataNotFoundException {
