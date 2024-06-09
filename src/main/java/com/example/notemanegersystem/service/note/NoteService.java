@@ -8,7 +8,9 @@ import com.example.notemanegersystem.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -142,6 +144,7 @@ public class NoteService implements INoteService{
             throw new Exception("You do not have permission to delete this note");
         }
         existingNote.setIsPinned(updatePinDTO.getIsPinned());
+        existingNote.setUpdatedAt(LocalDateTime.now());
         Note updatedNote = noteRepository.save(existingNote);
         NoteLog noteLog = NoteLog.builder()
                 .note(updatedNote)
@@ -159,6 +162,7 @@ public class NoteService implements INoteService{
             throw new Exception("You do not have permission to delete this note");
         }
         existingNote.setIsArchived(updateArchiveDTO.getIsArchived());
+        existingNote.setUpdatedAt(LocalDateTime.now());
         Note updatedNote = noteRepository.save(existingNote);
         NoteLog noteLog = NoteLog.builder()
                 .note(updatedNote)
@@ -166,5 +170,17 @@ public class NoteService implements INoteService{
                 .build();
         noteLogRepository.save(noteLog);
         return updatedNote;
+    }
+
+    @Override
+    public List<Note> getNotesByUser(Integer userId) {
+        List<Note> notes = noteRepository.findByUserIdAndIsArchivedFalse(userId);
+
+        // Sắp xếp ghi chú
+        notes.sort(Comparator.comparing(Note::getIsPinned, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(Note::getSortOrder, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(Note::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+
+        return notes;
     }
 }

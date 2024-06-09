@@ -95,7 +95,7 @@ public class NoteController {
             throw new RuntimeException(e);
         }
     }
-    @PatchMapping("/archi")
+    @PatchMapping("/archive")
     public ResponseEntity<Note> updateIsArchived(@RequestBody UpdateArchiveDTO updateArchiveDTO){
         try {
             Note updatedNote = noteService.updateIsArchived(updateArchiveDTO);
@@ -104,6 +104,15 @@ public class NoteController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getNotesByUser(@PathVariable Integer userId) {
+        try {
+            List<Note> notes = noteService.getNotesByUser(userId);
+            return ResponseEntity.ok(notes);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

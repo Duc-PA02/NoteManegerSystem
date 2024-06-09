@@ -13,4 +13,5 @@ import java.util.List;
 public interface NoteRepository extends JpaRepository<Note, Integer> {
     List<Note> findByUserId(Integer userId);
     Note findByIdAndUserId(Integer noteId, Integer userId);
+    List<Note> findByUserIdAndIsArchivedFalse(Integer userId);
 }

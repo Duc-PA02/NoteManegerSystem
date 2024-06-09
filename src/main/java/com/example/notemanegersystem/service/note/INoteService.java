@@ -16,4 +16,5 @@ public interface INoteService {
     String noteLabel(NoteLabelDTO noteLabelDTO) throws DataNotFoundException;
     Note updateIsPinned(UpdatePinDTO updatePinDTO) throws Exception;
     Note updateIsArchived(UpdateArchiveDTO updateArchiveDTO) throws Exception;
+    List<Note> getNotesByUser(Integer userId);
 }
