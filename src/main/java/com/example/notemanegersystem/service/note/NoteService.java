@@ -100,11 +100,6 @@ public class NoteService implements INoteService{
     }
 
     @Override
-    public Image createNoteImage(NoteImageDTO noteImageDTO) throws Exception {
-        return null;
-    }
-
-    @Override
     public Content createNoteContent(NoteContentDTO noteContentDTO) throws Exception {
         Optional<Note> noteOptional = noteRepository.findById(noteContentDTO.getNoteId());
         if (noteOptional.isPresent()) {
@@ -113,7 +108,13 @@ public class NoteService implements INoteService{
                     .text(noteContentDTO.getText())
                     .note(note)
                     .build();
-            return contentRepository.save(content);
+            contentRepository.save(content);
+            NoteLog noteLog = NoteLog.builder()
+                    .note(note)
+                    .action("add content")
+                    .build();
+            noteLogRepository.save(noteLog);
+            return content;
         } else {
             throw new Exception("Note not found with id: " + noteContentDTO.getNoteId());
         }
