@@ -37,30 +37,11 @@ public class NoteController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-
-    @PutMapping
-    public ResponseEntity<?> updateNote(@RequestBody NoteUpdateDTO noteUpdateDTO) {
-        try {
-            Note note = noteService.updateNote(noteUpdateDTO);
-            return ResponseEntity.ok().body(note);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
     @DeleteMapping
     public ResponseEntity<?> deleteNote(@RequestBody DeleteNoteDTO deleteNoteDTO) {
         try {
             String msg = noteService.deleteNote(deleteNoteDTO);
             return ResponseEntity.ok().body(msg);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-    @GetMapping
-    public ResponseEntity<?> noteByUser(@RequestParam Integer userId) {
-        try {
-            List<Note> noteList = noteService.noteByUser(userId);
-            return ResponseEntity.ok().body(noteList);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -101,6 +82,28 @@ public class NoteController {
             return ResponseEntity.status(500).body("Lỗi tải lên hình ảnh: " + e.getMessage());
         } catch (DataNotFoundException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PatchMapping("/pin")
+    public ResponseEntity<Note> updateIsPinned(@RequestBody UpdatePinDTO updatePinDTO){
+        try {
+            Note updatedNote = noteService.updateIsPinned(updatePinDTO);
+            return ResponseEntity.ok(updatedNote);
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @PatchMapping("/archi")
+    public ResponseEntity<Note> updateIsArchived(@RequestBody UpdateArchiveDTO updateArchiveDTO){
+        try {
+            Note updatedNote = noteService.updateIsArchived(updateArchiveDTO);
+            return ResponseEntity.ok(updatedNote);
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

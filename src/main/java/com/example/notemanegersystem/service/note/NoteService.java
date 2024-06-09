@@ -45,35 +45,6 @@ public class NoteService implements INoteService{
     }
 
     @Override
-    public Note updateNote(NoteUpdateDTO noteUpdateDTO) throws Exception {
-        Note existingNote = noteRepository.findById(noteUpdateDTO.getNoteId())
-                .orElseThrow(() -> new DataNotFoundException("note not found"));
-        if (!existingNote.getUser().getId().equals(noteUpdateDTO.getUserId())){
-            throw new Exception("You do not have permission to update this note");
-        }
-        List<NoteLog> noteLogs = new ArrayList<>();
-        if (!existingNote.getTitle().equals(noteUpdateDTO.getTitle())){
-            noteLogs.add(createLog(existingNote, "Title changed from " + existingNote.getTitle() + " to " + noteUpdateDTO.getTitle()));
-            existingNote.setTitle(noteUpdateDTO.getTitle());
-        }
-        if (!existingNote.getSortOrder().equals(noteUpdateDTO.getSortOrder())){
-            noteLogs.add(createLog(existingNote, "SortOrder changed from " + existingNote.getSortOrder() + " to " + noteUpdateDTO.getSortOrder()));
-            existingNote.setSortOrder(noteUpdateDTO.getSortOrder());
-        }
-        if (!existingNote.getIsPinned().equals(noteUpdateDTO.getIsPinned())) {
-            noteLogs.add(createLog(existingNote, "Pinned status changed from " + existingNote.getIsPinned() + " to " + noteUpdateDTO.getIsPinned()));
-            existingNote.setIsPinned(noteUpdateDTO.getIsPinned());
-        }
-        if (!existingNote.getIsArchived().equals(noteUpdateDTO.getIsArchived())) {
-            noteLogs.add(createLog(existingNote, "Archived status changed from " + existingNote.getIsArchived() + " to " + noteUpdateDTO.getIsArchived()));
-            existingNote.setIsArchived(noteUpdateDTO.getIsArchived());
-        }
-        noteRepository.save(existingNote);
-        noteLogRepository.saveAll(noteLogs);
-        return existingNote;
-    }
-
-    @Override
     public String deleteNote(DeleteNoteDTO deleteNoteDTO) throws Exception {
         Note existingNote = noteRepository.findById(deleteNoteDTO.getNoteId())
                 .orElseThrow(() -> new DataNotFoundException("note not found"));
@@ -121,23 +92,13 @@ public class NoteService implements INoteService{
     }
 
     @Override
-    public List<Note> noteByUser(Integer userId) throws DataNotFoundException {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null){
-            throw new DataNotFoundException("user not found");
-        }
-        List<Note> noteList = noteRepository.findNoteByUserId(userId);
-        return noteList;
-    }
-
-    @Override
     public List<Note> getNotesByUserAndLabel(Integer labelId, Integer userId) throws DataNotFoundException {
         // Kiểm tra xem nhãn có tồn tại không
         Label label = labelRepository.findById(labelId)
                 .orElseThrow(() -> new DataNotFoundException("Label not found"));
 
         // Lấy danh sách các ghi chú của người dùng
-        List<Note> userNotes = noteRepository.findNoteByUserId(userId);
+        List<Note> userNotes = noteRepository.findByUserId(userId);
         List<Note> filteredNotes = new ArrayList<>();
 
         // Lọc danh sách các ghi chú có nhãn cụ thể
@@ -173,10 +134,37 @@ public class NoteService implements INoteService{
         return "add label successfuly";
     }
 
-    private NoteLog createLog(Note note, String action){
-        NoteLog noteLog = new NoteLog();
-        noteLog.setNote(note);
-        noteLog.setAction(action);
-        return noteLog;
+    @Override
+    public Note updateIsPinned(UpdatePinDTO updatePinDTO) throws Exception {
+        Note existingNote = noteRepository.findById(updatePinDTO.getNoteId())
+                .orElseThrow(() -> new DataNotFoundException("note not found"));
+        if (!existingNote.getUser().getId().equals(updatePinDTO.getUserId())){
+            throw new Exception("You do not have permission to delete this note");
+        }
+        existingNote.setIsPinned(updatePinDTO.getIsPinned());
+        Note updatedNote = noteRepository.save(existingNote);
+        NoteLog noteLog = NoteLog.builder()
+                .note(updatedNote)
+                .action("Updated isPinned to: " + updatePinDTO.getIsPinned())
+                .build();
+        noteLogRepository.save(noteLog);
+        return updatedNote;
+    }
+
+    @Override
+    public Note updateIsArchived(UpdateArchiveDTO updateArchiveDTO) throws Exception {
+        Note existingNote = noteRepository.findById(updateArchiveDTO.getNoteId())
+                .orElseThrow(() -> new DataNotFoundException("note not found"));
+        if (!existingNote.getUser().getId().equals(updateArchiveDTO.getUserId())){
+            throw new Exception("You do not have permission to delete this note");
+        }
+        existingNote.setIsArchived(updateArchiveDTO.getIsArchived());
+        Note updatedNote = noteRepository.save(existingNote);
+        NoteLog noteLog = NoteLog.builder()
+                .note(updatedNote)
+                .action("Updated isPinned to: " + updateArchiveDTO.getIsArchived())
+                .build();
+        noteLogRepository.save(noteLog);
+        return updatedNote;
     }
 }
