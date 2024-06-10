@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -125,5 +126,13 @@ public class NoteController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
+    }
+    @GetMapping("/user/{userId}/search")
+    public ResponseEntity<List<Note>> searchNotesByTitle(
+            @PathVariable Integer userId,
+            @RequestParam String title
+    ) {
+        List<Note> notes = noteService.getNoteByTitle(userId, title);
+        return ResponseEntity.ok(notes);
     }
 }

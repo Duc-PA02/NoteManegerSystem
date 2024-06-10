@@ -18,4 +18,5 @@ public interface INoteService {
     Note updateIsArchived(UpdateArchiveDTO updateArchiveDTO) throws Exception;
     List<Note> getNotesByUser(Integer userId);
     void updateNoteOrder(UpdateNoteOrderDTO updateOrderDTO) throws DataNotFoundException;
+    List<Note> getNoteByTitle(Integer userId, String title);
 }

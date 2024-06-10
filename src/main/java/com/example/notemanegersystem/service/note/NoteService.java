@@ -211,6 +211,12 @@ public class NoteService implements INoteService{
         noteToUpdate.setSortOrder(updateOrderDTO.getNewOrder());
         noteRepository.save(noteToUpdate);
     }
+
+    @Override
+    public List<Note> getNoteByTitle(Integer userId, String title) {
+        return noteRepository.findByUserIdAndTitleContainingIgnoreCase(userId, title);
+    }
+
     private void adjustSortOrder(List<Note> userNotes, Note updatedNote, Integer newOrder) {
         // Xóa ghi chú cần cập nhật khỏi danh sách và thêm lại ghi chú ở vị trí mới
         userNotes.remove(updatedNote);
