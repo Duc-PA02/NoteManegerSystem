@@ -17,4 +17,5 @@ public interface INoteService {
     Note updateIsPinned(UpdatePinDTO updatePinDTO) throws Exception;
     Note updateIsArchived(UpdateArchiveDTO updateArchiveDTO) throws Exception;
     List<Note> getNotesByUser(Integer userId);
+    void updateNoteOrder(UpdateNoteOrderDTO updateOrderDTO) throws DataNotFoundException;
 }

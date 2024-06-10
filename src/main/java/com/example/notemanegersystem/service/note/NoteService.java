@@ -146,6 +146,10 @@ public class NoteService implements INoteService{
         existingNote.setIsPinned(updatePinDTO.getIsPinned());
         existingNote.setUpdatedAt(LocalDateTime.now());
         Note updatedNote = noteRepository.save(existingNote);
+        if (updatedNote.getIsPinned() != null && updatedNote.getIsPinned()){
+            updatedNote.setSortOrder(null);
+        }
+        noteRepository.save(updatedNote);
         NoteLog noteLog = NoteLog.builder()
                 .note(updatedNote)
                 .action("Updated isPinned to: " + updatePinDTO.getIsPinned())
@@ -164,6 +168,10 @@ public class NoteService implements INoteService{
         existingNote.setIsArchived(updateArchiveDTO.getIsArchived());
         existingNote.setUpdatedAt(LocalDateTime.now());
         Note updatedNote = noteRepository.save(existingNote);
+        if (updateArchiveDTO.getIsArchived() != null && updateArchiveDTO.getIsArchived()){
+            existingNote.setSortOrder(null);
+        }
+        noteRepository.save(updatedNote);
         NoteLog noteLog = NoteLog.builder()
                 .note(updatedNote)
                 .action("Updated isPinned to: " + updateArchiveDTO.getIsArchived())
@@ -179,8 +187,56 @@ public class NoteService implements INoteService{
         // Sắp xếp ghi chú
         notes.sort(Comparator.comparing(Note::getIsPinned, Comparator.nullsLast(Comparator.reverseOrder()))
                 .thenComparing(Note::getSortOrder, Comparator.nullsLast(Comparator.naturalOrder()))
-                .thenComparing(Note::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+                .thenComparing(Note::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
 
         return notes;
     }
+
+    @Override
+    public void updateNoteOrder(UpdateNoteOrderDTO updateOrderDTO) throws DataNotFoundException {
+        Note noteToUpdate = noteRepository.findById(updateOrderDTO.getNoteId())
+                .orElseThrow(() -> new DataNotFoundException("Note not found"));
+
+        if (!noteToUpdate.getUser().getId().equals(updateOrderDTO.getUserId())) {
+            throw new DataNotFoundException("Note does not belong to the user");
+        }
+
+        // Nhận tất cả các ghi chú cho người dùng chưa được lưu trữ và sắp xếp theo thứ tự sắp xếp
+        List<Note> userNotes = noteRepository.findByUserIdAndIsArchivedFalseOrderBySortOrder(updateOrderDTO.getUserId());
+
+        // Điều chỉnh sắp xếpThứ tự của các ghi chú khác
+        adjustSortOrder(userNotes, noteToUpdate, updateOrderDTO.getNewOrder());
+
+        // Đặt thứ tự sắp xếp mới để ghi chú được cập nhật
+        noteToUpdate.setSortOrder(updateOrderDTO.getNewOrder());
+        noteRepository.save(noteToUpdate);
+    }
+    private void adjustSortOrder(List<Note> userNotes, Note updatedNote, Integer newOrder) {
+        // Xóa ghi chú cần cập nhật khỏi danh sách và thêm lại ghi chú ở vị trí mới
+        userNotes.remove(updatedNote);
+
+        // Chỉ số của danh sách (index) bắt đầu từ 0, trong khi sortOrder thường bắt đầu từ 1.
+        // Do đó, khi thêm một ghi chú vào danh sách userNotes theo thứ tự mới (newOrder), ta cần trừ đi 1 để phù hợp với chỉ số của danh sách.
+        // Đảm bảo rằng newOrder không vượt quá kích thước của danh sách, nếu vượt thì chỉ định nó là kích thước danh sách.
+        int insertIndex = Math.min(newOrder - 1, userNotes.size());
+
+        // Thêm lại ghi chú ở vị trí mới
+        userNotes.add(insertIndex, updatedNote);
+
+        // Kiểm tra và ném ngoại lệ nếu ghi chú đã được ghim hoặc đã lưu trữ
+        validateNote(updatedNote);
+
+        // Chỉ định lại thứ tự sắp xếp cho tất cả các ghi chú
+        int currentOrder = 1;
+        for (Note note : userNotes) {
+            note.setSortOrder(currentOrder++);
+            noteRepository.save(note);
+        }
+    }
+    private void validateNote(Note note) {
+        if (note.getIsPinned() || note.getIsArchived()) {
+            throw new IllegalStateException("Cannot update a pinned or archived note");
+        }
+    }
+
 }

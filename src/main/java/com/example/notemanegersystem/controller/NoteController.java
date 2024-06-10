@@ -115,4 +115,15 @@ public class NoteController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @PatchMapping("/updateOrder")
+    public ResponseEntity<String> updateNoteOrder(@RequestBody UpdateNoteOrderDTO updateOrderDTO) {
+        try {
+            noteService.updateNoteOrder(updateOrderDTO);
+            return ResponseEntity.ok("Note order updated successfully");
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+        }
+    }
 }
