@@ -4,6 +4,7 @@ import com.example.notemanegersystem.component.JwtToken;
 import com.example.notemanegersystem.dtos.*;
 import com.example.notemanegersystem.entity.*;
 import com.example.notemanegersystem.exceptions.DataNotFoundException;
+import com.example.notemanegersystem.exceptions.UnauthorizedException;
 import com.example.notemanegersystem.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -77,6 +78,9 @@ public class NoteService implements INoteService{
         Optional<Note> noteOptional = noteRepository.findById(noteContentDTO.getNoteId());
         if (noteOptional.isPresent()) {
             Note note = noteOptional.get();
+            if (!note.getUser().getId().equals(noteContentDTO.getUserId())){
+                throw new UnauthorizedException("user does not have permission to create content");
+            }
             Content content = Content.builder()
                     .text(noteContentDTO.getText())
                     .note(note)

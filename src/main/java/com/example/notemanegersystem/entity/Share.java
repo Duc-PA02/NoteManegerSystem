@@ -19,12 +19,17 @@ public class Share extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(name = "is_accept")
-    private Boolean isAccept = true;
+    private Boolean isAccept;
 
     @ManyToOne
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_share_user"))
     @JsonBackReference
-    private User user;
+    private User user; // Người gửi chia sẻ
+
+    @ManyToOne
+    @JoinColumn(name = "recipient_user_id", foreignKey = @ForeignKey(name = "fk_share_recipient_user"))
+    @JsonBackReference
+    private User recipientUser; // Người nhận chia sẻ
 
     @ManyToOne
     @JoinColumn(name = "note_id", foreignKey = @ForeignKey(name = "fk_share_note"))

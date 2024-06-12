@@ -23,7 +23,7 @@ public class WebSecurityConfig {
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers(HttpMethod.POST,"user/logout","user/login", "user/register", "user/confirm-register").permitAll()
+                                .requestMatchers("user/logout","user/login", "user/register", "user/confirm-register").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable);

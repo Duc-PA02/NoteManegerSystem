@@ -9,4 +9,6 @@ public class NoteContentDTO {
     private Integer noteId;
     @JsonProperty("text")
     private String text;
+    @JsonProperty("user_id")
+    private Integer userId;
 }
