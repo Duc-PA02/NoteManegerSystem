@@ -1,5 +1,7 @@
 package com.example.notemanegersystem.controller;
 
+import com.example.notemanegersystem.dtos.NoteShareUpdateDTO;
+import com.example.notemanegersystem.dtos.RepShareDTO;
 import com.example.notemanegersystem.dtos.ShareNoteDTO;
 import com.example.notemanegersystem.entity.Note;
 import com.example.notemanegersystem.entity.Share;
@@ -38,6 +40,29 @@ public class ShareController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (UnauthorizedException e) {
             throw new RuntimeException(e);
+        }
+    }
+    @GetMapping("/user")
+    public ResponseEntity<List<Note>> getSharedNotes(@RequestParam Integer userId) {
+        List<Note> sharedNotes = shareService.getSharedNotes(userId);
+        return ResponseEntity.ok(sharedNotes);
+    }
+    @PatchMapping
+    public ResponseEntity<?> repShare(@RequestBody RepShareDTO repShareDTO){
+        try {
+            shareService.repShare(repShareDTO);
+            return ResponseEntity.ok().body("ok");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PutMapping("/content-update")
+    public ResponseEntity<?> updateSharedNoteContent(@RequestParam Integer userId, @RequestBody NoteShareUpdateDTO noteShareUpdateDTO){
+        try {
+            shareService.updateSharedNoteContent(userId, noteShareUpdateDTO);
+            return ResponseEntity.ok().body("ok");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
