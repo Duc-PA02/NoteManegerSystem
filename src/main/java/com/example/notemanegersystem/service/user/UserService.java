@@ -4,15 +4,20 @@ import com.example.notemanegersystem.component.JwtToken;
 import com.example.notemanegersystem.dtos.LoginRequest;
 import com.example.notemanegersystem.dtos.RegisterRequest;
 import com.example.notemanegersystem.dtos.SendEmail;
+import com.example.notemanegersystem.dtos.UserDTO;
 import com.example.notemanegersystem.entity.User;
 import com.example.notemanegersystem.exceptions.DataNotFoundException;
 import com.example.notemanegersystem.repository.UserRepository;
 import com.example.notemanegersystem.service.email.ConfirmEmailService;
+import com.fasterxml.jackson.databind.jsonschema.JsonSchema;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -71,4 +76,23 @@ public class UserService implements IUserService{
         return "Mã xác minh đã được gửi đến email của bạn";
     }
 
+    @Override
+    public UserDTO getInforUser(Integer userId) throws DataNotFoundException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("user not found"));
+        UserDTO userDTO = new UserDTO();
+        userDTO.setEmail(user.getEmail());
+        userDTO.setFullName(user.getFullName());
+        return userDTO;
+    }
+
+    @Override
+    public User updateUser(Integer userId, UserDTO userDTO) throws DataNotFoundException {
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("user not found"));
+        existingUser.setEmail(userDTO.getEmail());
+        existingUser.setFullName(userDTO.getFullName());
+        userRepository.save(existingUser);
+        return existingUser;
+    }
 }
