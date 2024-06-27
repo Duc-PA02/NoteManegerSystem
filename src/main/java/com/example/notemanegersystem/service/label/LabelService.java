@@ -23,12 +23,12 @@ public class LabelService implements ILabelService{
     private final NoteRepository noteRepository;
     @Override
     @Transactional
-    public String createLabel(LabelDTO labelDTO) {
+    public Label createLabel(LabelDTO labelDTO) {
         Label label = Label.builder()
                 .name(labelDTO.getName())
                 .build();
         labelRepository.save(label);
-        return "create successfully";
+        return label;
     }
 
     @Override

@@ -18,7 +18,7 @@ import java.util.List;
 public class LabelController {
     private final LabelService labelService;
     @PostMapping
-    public String createLabel(@RequestBody LabelDTO labelDTO){
+    public Label createLabel(@RequestBody LabelDTO labelDTO){
         return labelService.createLabel(labelDTO);
     }
     @DeleteMapping

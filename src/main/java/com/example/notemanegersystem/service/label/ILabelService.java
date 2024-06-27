@@ -7,7 +7,7 @@ import com.example.notemanegersystem.exceptions.DataNotFoundException;
 import java.util.List;
 
 public interface ILabelService {
-    String createLabel(LabelDTO labelDTO);
+    Label createLabel(LabelDTO labelDTO);
     String deleteLabel(Integer id) throws DataNotFoundException;
     List<Label> labelByNote(Integer noteId) throws DataNotFoundException;
 }

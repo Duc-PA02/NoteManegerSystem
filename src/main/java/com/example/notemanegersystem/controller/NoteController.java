@@ -7,15 +7,20 @@ import com.example.notemanegersystem.entity.Note;
 import com.example.notemanegersystem.exceptions.DataNotFoundException;
 import com.example.notemanegersystem.service.CloudinaryService;
 import com.example.notemanegersystem.service.note.NoteService;
+import freemarker.template.Template;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("note")
@@ -23,6 +28,7 @@ import java.util.List;
 public class NoteController {
     private final NoteService noteService;
     private final CloudinaryService cloudinaryService;
+    private final FreeMarkerConfigurer freemarkerConfig;
     @PostMapping
     public ResponseEntity<Note> createNote(@RequestHeader("Authorization") String authHeader, @RequestBody NoteDTO noteDTO) {
         try {
@@ -111,7 +117,15 @@ public class NoteController {
     public ResponseEntity<?> getNotesByUser(@PathVariable Integer userId) {
         try {
             List<Note> notes = noteService.getNotesByUser(userId);
-            return ResponseEntity.ok(notes);
+            // Thiết lập dữ liệu để truyền vào template
+            Map<String, Object> model = new HashMap<>();
+            model.put("notes", notes);
+            Template template = freemarkerConfig.getConfiguration().getTemplate("note-template.ftl");
+
+            // Merge dữ liệu với template
+            String jsonResponse = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+
+            return ResponseEntity.ok(jsonResponse);
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
